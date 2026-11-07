@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>contact.hiretrix</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        #bg-vid {
+            position: fixed;
+            object-fit: cover;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            animation: slowZoom 20s ease-in-out infinite alternate;
+        }
+        @keyframes slowZoom {
+            from {transform: scale(1);}
+            to {transform: scale(1.15);}
+        }
+        @keyframes zoomIn {
+            from {opacity: 0; transform: scale(1.1);}
+            to {opacity: 1; transform: scale(1);}
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .contact-box {
+            width: 100%;
+            max-width: 440px;
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgb(255, 255, 255);
+            color: #ffffff;
+            animation: zoomIn 0.6s ease-in;
+        }
+        .form-title {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 900;
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .input-box {
+            position: relative;
+            margin-bottom: 28px;
+            color: #ffffff;
+        }
+        .input-box input,
+        .input-box textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-bottom: 2px solid #ffffff;
+            color: #ffffff;
+            background: none;
+            outline: none;
+            font-size: 16px;
+        }
+        .input-box textarea {
+            resize: none;
+            height: 100px;
+        }
+        .input-box label {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .input-box input:focus ~ label,
+        .input-box input:valid ~ label,
+        .input-box textarea:focus ~ label,
+        .input-box textarea:valid ~ label {
+            transform: translateY(-28px);
+            font-size: 12px;
+            color: #ffffff;
+        }
+        .btn {
+            width: 100%;
+            height: 58px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid #ffffff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background-color: transparent;
+            color: #ffffff;
+        }
+        .btn:hover {
+            background-color: #3571ff;
+            transform: scale(1.05);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .thanks {
+            display: none;
+            text-align: center;
+            margin-top: 24px;
+            font-size: 18px;
+            font-weight: 600;
+            animation: zoomIn 0.6s ease-in;
+        }
+        .thanks.show {
+            display: block;
+        }
+        .error {
+            display: none;
+            text-align: center;
+            margin-top: 16px;
+            color: #ff8a8a;
+        }
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <video id="bg-vid" muted><source src="https://github.com/user-attachments/assets/ea8b7106-ae80-41a4-8d92-f7b61dffa914"></video>
+
+    <div class="contact-box">
+        <h1 class="form-title">Contact us</h1>
+
+        <form id="contact-form">
+            <!-- WEB3FORMS: paste your access key below -->
+            <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY">
+
+            <div class="input-box">
+                <input type="text" name="name" required>
+                <label>Name</label>
+            </div>
+
+            <div class="input-box">
+                <input type="email" name="email" required>
+                <label>Email</label>
+            </div>
+
+            <div class="input-box">
+                <textarea name="message" required></textarea>
+                <label>Message</label>
+            </div>
+
+            <button type="submit" class="btn" id="submit-btn">Send message</button>
+        </form>
+
+        <p class="error" id="error-msg">Something went wrong. Please try again.</p>
+        <p class="thanks" id="thanks-msg">We appreciate your response 💙</p>
+    </div>
+
+    <script>
+        const vid = document.getElementById("bg-vid");
+        vid.play();
+        vid.addEventListener("ended", () => vid.pause());
+
+        const form = document.getElementById("contact-form");
+        const btn = document.getElementById("submit-btn");
+        const thanks = document.getElementById("thanks-msg");
+        const error = document.getElementById("error-msg");
+
+        // WEB3FORMS: endpoint is ready, just add your access key in the hidden input above
+        const ENDPOINT = "https://api.web3forms.com/submit";
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            error.classList.remove("show");
+            btn.disabled = true;
+            btn.textContent = "Sending...";
+
+            const keyMissing = form.access_key.value === "YOUR_WEB3FORMS_ACCESS_KEY";
+
+            try {
+                // Until a real key is added, just preview the thank-you message
+                if (!keyMissing) {
+                    const res = await fetch(ENDPOINT, {
+                        method: "POST",
+                        headers: { "Accept": "application/json" },
+                        body: new FormData(form)
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error("Failed");
+                }
+                form.style.display = "none";
+                thanks.classList.add("show");
+            } catch (err) {
+                error.classList.add("show");
+                btn.disabled = false;
+                btn.textContent = "Send message";
+            }
+        });
+    </script>
+</body>
+</html>
